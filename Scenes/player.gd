@@ -22,7 +22,9 @@ var dash: bool = false
 var wall_slide:bool = false
 var ledge_right = false
 var ledge_left = false
+var is_attacking = false
 
+const ATTACK_DEACC = 2000
 const COYOTE_TIME = 0.1
 const MAX_SPEED = 300
 const MAX_CROUCH_SPEED = 150
@@ -68,8 +70,7 @@ func _apply_movement(delta):
 	coyote_timer = clamp(coyote_timer, 0, COYOTE_TIME)
 	
 	#Left and right movement
-	
-	if !sliding and !roll and !dash:
+	if !sliding and !roll and !dash and !is_attacking:
 		if direction != 0:
 			if !crouched:
 				#Run
@@ -82,20 +83,26 @@ func _apply_movement(delta):
 	
 	#Desaceleration
 	if !roll and !dash:
-		if direction == 0 and !sliding:
+		if direction == 0 and !sliding and !is_attacking:
 			if velocity.x > 0:
 				velocity.x = velocity.x - (ACC * delta)
 				velocity.x = clamp(velocity.x, 0, MAX_SPEED)
 			else:
 				velocity.x = velocity.x + (ACC * delta)
 				velocity.x = clamp(velocity.x, -MAX_SPEED, 0)
-			
 		elif sliding:
 			if velocity.x > 0:
 				velocity.x = velocity.x - (SLIDING_DEACC * delta)
 				velocity.x = clamp(velocity.x, 0, MAX_SPEED)
 			else:
 				velocity.x = velocity.x + (SLIDING_DEACC * delta)
+				velocity.x = clamp(velocity.x, -MAX_SPEED, 0)
+		elif is_attacking:
+			if velocity.x > 0:
+				velocity.x = velocity.x - (ATTACK_DEACC * delta)
+				velocity.x = clamp(velocity.x, 0, MAX_SPEED)
+			else:
+				velocity.x = velocity.x + (ATTACK_DEACC * delta)
 				velocity.x = clamp(velocity.x, -MAX_SPEED, 0)
 	
 	
@@ -106,7 +113,7 @@ func _apply_movement(delta):
 		velocity.x = clamp(velocity.x, -MAX_CROUCH_SPEED, MAX_CROUCH_SPEED)
 	
 	#Jumping
-	if (coyote_timer > 0 or is_on_floor()) and jump_buffer_timer.time_left > 0 and !jumped and !roll:
+	if (coyote_timer > 0 or is_on_floor() or is_on_wall()) and jump_buffer_timer.time_left > 0 and !jumped and !roll and !is_attacking:
 		coyote_timer = 0
 		jumped = true
 		jump_buffer_timer.stop()
@@ -145,3 +152,7 @@ func take_damage(amount):
 
 func _on_modulate_damage_timeout() -> void:
 	sprite.modulate = Color(1, 1, 1, 1)
+
+func _on_attack_hitbox_body_entered(body: Node2D) -> void:
+	body.take_damage(10)
+	print(body)

@@ -4,6 +4,8 @@ extends "res://Scenes/stateMachine.gd"
 @onready var jump_buffer_timer: Timer = $"../Timers/Jump Buffer timer"
 @onready var sprite: AnimatedSprite2D = $"../Sprite"
 @onready var dash_cd: Timer = $"../Timers/Dash CD"
+@onready var attack_hitbox: Area2D = $"../AttackHitbox"
+@onready var crouch_attack_hitbox: Area2D = $"../Crouch Attack Hitbox"
 
 var dash_in_cooldown: = false
 var dash_timer = 0.0
@@ -11,9 +13,9 @@ var dash_timer = 0.0
 const DASH_TIME = 0.5
 
 func _process(delta: float) -> void:
-	pass
-	#label.text = str_Current_State() #Current player state
-	#label.text = str(parent.is_on_wall()) + " " + str(!parent.is_on_floor())
+	
+	label.text = str_Current_State() #Current player state
+	#label.text = str(jump_buffer_timer.time_left)
 
 func str_Current_State():
 	match state:
@@ -98,17 +100,21 @@ func _state_logic(delta):
 	if state != states.wall_slide:
 		if parent.velocity.x < 0:
 			sprite.flip_h = true
-			sprite.offset.x = -2
+			sprite.offset.x = -3
+			attack_hitbox.position.x = -33
+			crouch_attack_hitbox.position.x = -29
 		elif parent.velocity.x > 0:
 			sprite.flip_h = false
-			sprite.offset.x = 5
+			sprite.offset.x = 4
+			attack_hitbox.position.x = 33
+			crouch_attack_hitbox.position.x = 29
 	else:
 		if parent.velocity.x < 0:
 			sprite.flip_h = false
-			sprite.offset.x = 5
+			sprite.offset.x = 4
 		elif parent.velocity.x > 0:
 			sprite.flip_h = true
-			sprite.offset.x = -2
+			sprite.offset.x = -3
 	
 	parent._apply_gravity(delta)
 	parent._apply_movement(delta)
@@ -155,6 +161,8 @@ func _get_transition(delta):
 					return states.falling
 			elif parent.velocity.x != 0:
 				return states.crouch_walk
+			elif Input.is_action_pressed("M1"):
+				return states.crouch_attack
 		#Crouch walk
 		states.crouch_walk:
 			parent.crouched = true
@@ -168,6 +176,8 @@ func _get_transition(delta):
 				return states.run
 			elif parent.velocity.x == 0 and parent.direction == 0:
 				return states.crouch_idle
+			elif Input.is_action_pressed("M1"):
+				return states.crouch_attack
 		#Run
 		states.run:
 			parent.crouched = false
@@ -178,16 +188,17 @@ func _get_transition(delta):
 					return states.falling 
 			elif sign(parent.direction) != sign(parent.velocity.x) and (parent.velocity.x > 100 or parent.velocity.x < -100):
 				return states.turn_around
+			elif Input.is_action_pressed("M1"):
+				return states.attack
 			elif parent.velocity.x == 0 and parent.direction == 0:
 				return states.idle
 			elif Input.is_action_pressed("Alt") and !dash_in_cooldown:
 				dash_timer = DASH_TIME
 				return states.dash
-			elif (parent.velocity.x > 200 or parent.velocity.x < -200):
-				if Input.is_action_pressed("S"):
-					return states.slide
-				elif Input.is_action_pressed("Space") and parent.is_on_floor():
-					return states.roll
+			elif (parent.velocity.x > 200 or parent.velocity.x < -200) and Input.is_action_pressed("S"):
+				return states.slide
+			elif Input.is_action_pressed("Space") and parent.is_on_floor():
+				return states.roll
 		#Slide
 		states.slide:
 			parent.sliding = true
@@ -224,6 +235,8 @@ func _get_transition(delta):
 				return states.idle
 			elif parent.velocity.x == 0:
 				return states.idle
+			elif Input.is_action_pressed("M1"):
+				return states.attack
 		#Jump
 		states.jump:
 			parent.crouched = false
@@ -281,10 +294,46 @@ func _get_transition(delta):
 			pass
 		#Attack
 		states.attack:
-			pass
+			parent.is_attacking = true
+			if sprite.get_frame() == 1 or sprite.get_frame() == 2:
+				attack_hitbox.monitoring = true
+			else:
+				attack_hitbox.monitoring = false
+			if Input.is_action_pressed("S") and Input.is_action_pressed("M1") and sprite.get_frame() == 3:
+				return states.crouch_attack
+			elif Input.is_action_pressed("M1") and sprite.get_frame() == 3:
+				return states.attack_2
+			elif sprite.get_frame() == 3:
+				parent.is_attacking = false
+				return states.idle
 		#Attack2
 		states.attack_2:
-			pass
+			parent.is_attacking = true
+			if sprite.get_frame() == 2 or sprite.get_frame() == 3:
+				attack_hitbox.monitoring = true
+			else:
+				attack_hitbox.monitoring = false
+			if Input.is_action_pressed("S") and Input.is_action_pressed("M1") and sprite.get_frame() == 5:
+				return states.crouch_attack
+			elif Input.is_action_pressed("M1") and sprite.get_frame() == 5:
+				return states.attack
+			elif sprite.get_frame() == 5:
+				parent.is_attacking = false
+				return states.idle
+		#Crouch Attack
+		states.crouch_attack:
+			parent.is_attacking = true
+			if sprite.get_frame() == 1 or sprite.get_frame() == 2:
+				crouch_attack_hitbox.monitoring = true
+			else:
+				crouch_attack_hitbox.monitoring = false
+			if !Input.is_action_pressed("S") and Input.is_action_pressed("M1") and sprite.get_frame() == 3:
+				return states.attack
+			elif Input.is_action_pressed("M1") and sprite.get_frame() == 3:
+				return states.crouch_attack
+			elif sprite.get_frame() == 3:
+				parent.is_attacking = false
+				return states.crouch_idle
 	return null
 
 func _enter_state(new_state, old_state):
@@ -326,7 +375,9 @@ func _enter_state(new_state, old_state):
 			states.attack:
 				sprite.play("Attack")
 			states.attack_2:
-				sprite.play("Attack2")
+				sprite.play("Attack 2")
+			states.crouch_attack:
+				sprite.play("Crouch Attack")
 
 func _exit_state(old_state, new_state):
 	pass

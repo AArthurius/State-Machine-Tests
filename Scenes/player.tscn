@@ -1,4 +1,4 @@
-[gd_scene load_steps=129 format=3 uid="uid://xavblitkcp0i"]
+[gd_scene load_steps=131 format=3 uid="uid://xavblitkcp0i"]
 
 [ext_resource type="Script" path="res://Scenes/player.gd" id="1_dv2ni"]
 [ext_resource type="Texture2D" uid="uid://c38rjx14nk0ka" path="res://Assets/Knight/_JumpFallInbetween.png" id="2_aht1j"]
@@ -443,7 +443,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_qd73x")
 }],
-"loop": true,
+"loop": false,
 "name": &"Attack",
 "speed": 12.0
 }, {
@@ -466,7 +466,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_5qi6l")
 }],
-"loop": true,
+"loop": false,
 "name": &"Attack 2",
 "speed": 12.0
 }, {
@@ -483,7 +483,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_dgwae")
 }],
-"loop": true,
+"loop": false,
 "name": &"Crouch Attack",
 "speed": 12.0
 }, {
@@ -854,7 +854,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yuys5"]
-size = Vector2(17, 38)
+size = Vector2(16, 38)
 
 [sub_resource type="Animation" id="Animation_7omgx"]
 resource_name = "Attack"
@@ -864,8 +864,15 @@ _data = {
 "Attack": SubResource("Animation_7omgx")
 }
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xrr62"]
+size = Vector2(38, 44)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_plnkw"]
+size = Vector2(31, 25)
+
 [node name="Player" type="CharacterBody2D"]
 z_index = 5
+collision_mask = 7
 script = ExtResource("1_dv2ni")
 
 [node name="State Machine" type="Node" parent="."]
@@ -890,12 +897,13 @@ one_shot = true
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_s5js2")
-animation = &"Wall Climb No Mov"
+animation = &"Crouch Attack"
 autoplay = "Idle"
-offset = Vector2(5, -22)
+frame = 1
+offset = Vector2(4, -23)
 
 [node name="Hitbox" type="CollisionShape2D" parent="."]
-position = Vector2(1.5, -1)
+position = Vector2(0, -2)
 shape = SubResource("RectangleShape2D_yuys5")
 
 [node name="Label" type="Label" parent="."]
@@ -909,6 +917,26 @@ libraries = {
 "": SubResource("AnimationLibrary_3obt8")
 }
 
+[node name="AttackHitbox" type="Area2D" parent="."]
+position = Vector2(33, -5)
+collision_layer = 4
+collision_mask = 8
+monitoring = false
+
+[node name="Shape" type="CollisionShape2D" parent="AttackHitbox"]
+shape = SubResource("RectangleShape2D_xrr62")
+
+[node name="Crouch Attack Hitbox" type="Area2D" parent="."]
+position = Vector2(29, 4)
+collision_layer = 4
+collision_mask = 8
+monitoring = false
+
+[node name="Shape" type="CollisionShape2D" parent="Crouch Attack Hitbox"]
+shape = SubResource("RectangleShape2D_plnkw")
+
 [connection signal="timeout" from="Timers/Dash CD" to="State Machine" method="_on_dash_cd_timeout"]
 [connection signal="timeout" from="Timers/After Image Timer" to="." method="_on_after_image_timer_timeout"]
 [connection signal="timeout" from="Timers/Modulate Damage" to="." method="_on_modulate_damage_timeout"]
+[connection signal="body_entered" from="AttackHitbox" to="." method="_on_attack_hitbox_body_entered"]
+[connection signal="body_entered" from="Crouch Attack Hitbox" to="." method="_on_attack_hitbox_body_entered"]
