@@ -276,8 +276,8 @@ func _get_transition(delta):
 			elif !parent.is_on_wall():
 				parent.wall_slide = false
 				return states.falling
-		#Wall Rang
-		states.wall_rang:
+		#Wall Climb
+		states.wall_climb:
 			pass
 		#Attack
 		states.attack:
@@ -321,8 +321,8 @@ func _enter_state(new_state, old_state):
 				sprite.play("Wall Slide")
 			states.wall_rang:
 				sprite.play("Wall Rang")
-			states.wall_climg:
-				sprite.play("Wall Climb")
+			states.wall_climb:
+				sprite.play("Wall Climb No Mov")
 			states.attack:
 				sprite.play("Attack")
 			states.attack_2:

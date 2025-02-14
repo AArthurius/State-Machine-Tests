@@ -22,8 +22,6 @@ var dash: bool = false
 var wall_slide:bool = false
 var ledge_right = false
 var ledge_left = false
-var wall_rang_right = false
-var wall_rang_left = false
 
 const COYOTE_TIME = 0.1
 const MAX_SPEED = 300
@@ -52,6 +50,7 @@ func ledge():
 		return top_left_cell
 	else:
 		ledge_left = false
+	
 	if ground_and_walls.get_cell_tile_data(top_right_cell) != null:
 		ledge_right = ground_and_walls.get_cell_tile_data(top_right_cell).get_custom_data("Ledge")
 		return top_right_cell

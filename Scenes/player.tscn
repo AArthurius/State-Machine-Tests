@@ -890,7 +890,7 @@ one_shot = true
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_s5js2")
-animation = &"Wall Slide"
+animation = &"Wall Climb No Mov"
 autoplay = "Idle"
 offset = Vector2(5, -22)
 
