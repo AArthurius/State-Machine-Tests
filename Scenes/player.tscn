@@ -1,4 +1,4 @@
-[gd_scene load_steps=131 format=3 uid="uid://xavblitkcp0i"]
+[gd_scene load_steps=132 format=3 uid="uid://xavblitkcp0i"]
 
 [ext_resource type="Script" path="res://Scenes/player.gd" id="1_dv2ni"]
 [ext_resource type="Texture2D" uid="uid://c38rjx14nk0ka" path="res://Assets/Knight/_JumpFallInbetween.png" id="2_aht1j"]
@@ -856,6 +856,9 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yuys5"]
 size = Vector2(16, 38)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gtqhm"]
+size = Vector2(16, 27)
+
 [sub_resource type="Animation" id="Animation_7omgx"]
 resource_name = "Attack"
 
@@ -897,14 +900,18 @@ one_shot = true
 
 [node name="Sprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_s5js2")
-animation = &"Crouch Attack"
+animation = &"Idle"
 autoplay = "Idle"
-frame = 1
 offset = Vector2(4, -23)
 
-[node name="Hitbox" type="CollisionShape2D" parent="."]
+[node name="Standing Shape" type="CollisionShape2D" parent="."]
 position = Vector2(0, -2)
 shape = SubResource("RectangleShape2D_yuys5")
+
+[node name="Crouch Shape" type="CollisionShape2D" parent="."]
+position = Vector2(0, 3.5)
+shape = SubResource("RectangleShape2D_gtqhm")
+disabled = true
 
 [node name="Label" type="Label" parent="."]
 offset_left = -19.0

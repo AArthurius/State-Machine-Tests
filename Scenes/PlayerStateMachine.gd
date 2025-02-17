@@ -7,14 +7,15 @@ extends "res://Scenes/stateMachine.gd"
 @onready var attack_hitbox: Area2D = $"../AttackHitbox"
 @onready var crouch_attack_hitbox: Area2D = $"../Crouch Attack Hitbox"
 
+
 var dash_in_cooldown: = false
 var dash_timer = 0.0
 
 const DASH_TIME = 0.5
 
 func _process(delta: float) -> void:
-	
-	label.text = str_Current_State() #Current player state
+	label.text = str(parent.velocity)
+	#label.text = #str_Current_State() #Current player state
 	#label.text = str(jump_buffer_timer.time_left)
 
 func str_Current_State():
@@ -125,6 +126,7 @@ func _get_transition(delta):
 	match state:
 		#Idle
 		states.idle:
+			parent.crouched = false
 			if !parent.is_on_floor():
 				if parent.velocity.y < 0:
 					return states.jump
@@ -152,7 +154,8 @@ func _get_transition(delta):
 				return states.run
 		#Crouch Idle
 		states.crouch_idle:
-			if !Input.is_action_pressed("S"):
+			parent.crouched = true
+			if !Input.is_action_pressed("S") and parent.can_stand():
 				return states.crouch_transition
 			elif !parent.is_on_floor():
 				if parent.velocity.y < 0:
@@ -186,7 +189,7 @@ func _get_transition(delta):
 					return states.jump
 				elif parent.velocity.y >= 0:
 					return states.falling 
-			elif sign(parent.direction) != sign(parent.velocity.x) and (parent.velocity.x > 100 or parent.velocity.x < -100):
+			elif sign(parent.direction) != sign(parent.velocity.x) and abs(parent.velocity.x) > 100 and parent.direction != 0:
 				return states.turn_around
 			elif Input.is_action_pressed("M1"):
 				return states.attack
@@ -205,6 +208,7 @@ func _get_transition(delta):
 			if !parent.is_on_floor():
 				parent.sliding = false
 				if parent.velocity.y < 0:
+					parent.velocity.x += sign(parent.velocity.x) * 200 #Jumps after a slide speed you up
 					return states.jump
 				elif parent.velocity.y >= 0:
 					return states.falling 
@@ -253,6 +257,7 @@ func _get_transition(delta):
 				return states.falling
 		#Falling
 		states.falling:
+			parent.crouched = false
 			if parent.is_on_floor():
 				return states.idle
 			elif parent.velocity.y < 0:
@@ -282,10 +287,14 @@ func _get_transition(delta):
 				return states.idle
 		#Wall Slide
 		states.wall_slide:
+			parent.jumped = false
 			parent.wall_slide = true
 			if parent.is_on_floor():
 				parent.wall_slide = false
 				return states.idle
+			elif parent.velocity.y < 0:
+				parent.wall_slide = false
+				return states.jump
 			elif !parent.is_on_wall():
 				parent.wall_slide = false
 				return states.falling
@@ -339,44 +348,56 @@ func _get_transition(delta):
 func _enter_state(new_state, old_state):
 	match new_state:
 			states.idle:
+				parent.on_stand()
 				sprite.play("Idle")
 			states.run:
+				parent.on_stand()
 				sprite.play("Run")
 			states.jump:
+				parent.on_stand()
 				sprite.play("Jump")
 			states.fall_transition:
 				sprite.play("Fall Transition")
 			states.falling:
+				parent.on_stand()
 				sprite.play("Falling")
 			states.turn_around:
 				sprite.play("Turn Around")
 			states.crouch_idle:
+				parent.on_crouch()
 				sprite.play("Crouch Idle")
 			states.crouch_transition:
 				sprite.play("Crouch Transition")
 			states.crouch_walk:
+				parent.on_crouch()
 				sprite.play("Crouch Walk")
 			states.slide:
+				parent.on_crouch()
 				sprite.play("Slide")
 			states.slide_transition:
 				sprite.play("Slide Transition End")
 			states.roll:
+				parent.on_crouch()
 				sprite.play("Roll")
 			states.dash:
 				sprite.play("Dash")
 			states.death:
 				sprite.play("Death")
 			states.wall_slide:
+				parent.on_stand()
 				sprite.play("Wall Slide")
 			states.wall_rang:
 				sprite.play("Wall Rang")
 			states.wall_climb:
 				sprite.play("Wall Climb No Mov")
 			states.attack:
+				parent.on_stand()
 				sprite.play("Attack")
 			states.attack_2:
+				parent.on_stand()
 				sprite.play("Attack 2")
 			states.crouch_attack:
+				parent.on_crouch()
 				sprite.play("Crouch Attack")
 
 func _exit_state(old_state, new_state):

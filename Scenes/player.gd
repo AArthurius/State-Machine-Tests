@@ -5,6 +5,10 @@ extends CharacterBody2D
 @onready var after_image_timer: Timer = $"Timers/After Image Timer"
 @onready var modulate_damage: Timer = $"Timers/Modulate Damage"
 @onready var ground_and_walls: TileMapLayer = $"../TileMap/Ground and Walls"
+@onready var standing_shape: CollisionShape2D = $"Standing Shape"
+@onready var crouch_shape: CollisionShape2D = $"Crouch Shape"
+
+
 
 const AFTER_IMAGE = preload("res://Scenes/after_image.tscn")
 
@@ -24,10 +28,12 @@ var ledge_right = false
 var ledge_left = false
 var is_attacking = false
 
+const JUMP_DEACC = 300
 const ATTACK_DEACC = 2000
 const COYOTE_TIME = 0.1
 const MAX_SPEED = 300
 const MAX_CROUCH_SPEED = 150
+const MAX_ABSOLUTE_SPEED = 600 #True max speed, can't achieve by moving normally
 const JUMP_VELOCITY = -400.0
 const ACC = 1200 
 const SLIDING_DEACC = 400
@@ -36,7 +42,7 @@ const GRAVITY = 1500
 const JUMP_GRAVITY = 1000
 const WALL_SLIDE_GRAVITY = 150
 
-func _process(delta: float) -> void:
+func _process(delta: float) -> void:	
 	ledge()
 	if health <= 0:
 		dead = true
@@ -72,52 +78,62 @@ func _apply_movement(delta):
 	#Left and right movement
 	if !sliding and !roll and !dash and !is_attacking:
 		if direction != 0:
-			if !crouched:
+			if !crouched and (abs(velocity.x) < MAX_SPEED or sign(direction) != sign(velocity.x)):
 				#Run
-				velocity.x = velocity.x + (direction * ACC) * delta
-			else:
+				velocity.x = move_toward(velocity.x, direction *  MAX_SPEED, ACC * delta)
+			elif (abs(velocity.x) < MAX_SPEED or sign(direction) != sign(velocity.x)):
 				#Crouch walk
-				velocity.x = velocity.x + (direction * CROUCH_ACC) * delta
+				velocity.x = move_toward(velocity.x, direction *  MAX_CROUCH_SPEED, ACC * delta)
 	elif dash or roll:
-		velocity.x = sign(velocity.x) * 300
+		velocity.x = sign(velocity.x) * MAX_SPEED
 	
 	#Desaceleration
 	if !roll and !dash:
-		if direction == 0 and !sliding and !is_attacking:
+		if (abs(velocity.x) > MAX_SPEED or direction == 0) and !sliding and !is_attacking and is_on_floor():
 			if velocity.x > 0:
 				velocity.x = velocity.x - (ACC * delta)
-				velocity.x = clamp(velocity.x, 0, MAX_SPEED)
+				velocity.x = clamp(velocity.x, 0, MAX_ABSOLUTE_SPEED)
 			else:
 				velocity.x = velocity.x + (ACC * delta)
-				velocity.x = clamp(velocity.x, -MAX_SPEED, 0)
-		elif sliding:
+				velocity.x = clamp(velocity.x, -MAX_ABSOLUTE_SPEED, 0)
+		elif !is_on_floor():
+			if velocity.x > 0:
+				velocity.x = velocity.x - (JUMP_DEACC * delta)
+				velocity.x = clamp(velocity.x, 0, MAX_ABSOLUTE_SPEED)
+			else:
+				velocity.x = velocity.x + (JUMP_DEACC * delta)
+				velocity.x = clamp(velocity.x, -MAX_ABSOLUTE_SPEED, 0)
+		elif sliding or !is_on_floor():
 			if velocity.x > 0:
 				velocity.x = velocity.x - (SLIDING_DEACC * delta)
-				velocity.x = clamp(velocity.x, 0, MAX_SPEED)
+				velocity.x = clamp(velocity.x, 0, MAX_ABSOLUTE_SPEED)
 			else:
 				velocity.x = velocity.x + (SLIDING_DEACC * delta)
-				velocity.x = clamp(velocity.x, -MAX_SPEED, 0)
+				velocity.x = clamp(velocity.x, -MAX_ABSOLUTE_SPEED, 0)
 		elif is_attacking:
 			if velocity.x > 0:
 				velocity.x = velocity.x - (ATTACK_DEACC * delta)
-				velocity.x = clamp(velocity.x, 0, MAX_SPEED)
+				velocity.x = clamp(velocity.x, 0, MAX_ABSOLUTE_SPEED)
 			else:
 				velocity.x = velocity.x + (ATTACK_DEACC * delta)
-				velocity.x = clamp(velocity.x, -MAX_SPEED, 0)
+				velocity.x = clamp(velocity.x, -MAX_ABSOLUTE_SPEED, 0)
 	
-	
-	#Clamp Speed
-	if !crouched:
-		velocity.x = clamp(velocity.x, -MAX_SPEED, MAX_SPEED)
-	else:
-		velocity.x = clamp(velocity.x, -MAX_CROUCH_SPEED, MAX_CROUCH_SPEED)
+	#Clamp velocity
+	velocity.x = clamp(velocity.x, -MAX_ABSOLUTE_SPEED, MAX_ABSOLUTE_SPEED)
 	
 	#Jumping
-	if (coyote_timer > 0 or is_on_floor() or is_on_wall()) and jump_buffer_timer.time_left > 0 and !jumped and !roll and !is_attacking:
+	if jump_buffer_timer.time_left > 0 and !jumped and !roll and !is_attacking:
 		coyote_timer = 0
 		jumped = true
 		jump_buffer_timer.stop()
-		velocity.y = JUMP_VELOCITY
+		if is_on_floor() or  coyote_timer > 0:
+			velocity.y += JUMP_VELOCITY
+		elif is_on_wall() and direction == 1:
+			velocity.y = JUMP_VELOCITY
+			velocity.x = -MAX_SPEED
+		elif is_on_wall() and direction == -1:
+			velocity.y = JUMP_VELOCITY
+			velocity.x = MAX_SPEED
 
 func _apply_gravity(delta):
 	#Gravity
@@ -128,10 +144,10 @@ func _apply_gravity(delta):
 			velocity.y += GRAVITY * delta
 		
 		if wall_slide:
-			velocity.y = clamp(velocity.y, WALL_SLIDE_GRAVITY, WALL_SLIDE_GRAVITY)
+			velocity.y = clamp(velocity.y, 0, WALL_SLIDE_GRAVITY)
 	
 	
-	velocity.y = clamp(velocity.y, JUMP_VELOCITY, MAX_SPEED)
+	velocity.y = clamp(velocity.y, JUMP_VELOCITY, -JUMP_VELOCITY)
 	
 	move_and_slide()
 
@@ -156,3 +172,29 @@ func _on_modulate_damage_timeout() -> void:
 func _on_attack_hitbox_body_entered(body: Node2D) -> void:
 	body.take_damage(10)
 	print(body)
+
+func on_crouch():
+	standing_shape.disabled = true
+	crouch_shape.disabled = false
+
+func on_stand():
+	standing_shape.disabled = false
+	crouch_shape.disabled = true
+
+func can_stand() -> bool:
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsShapeQueryParameters2D.new()
+	query.set_shape(standing_shape.shape)
+	query.transform = standing_shape.global_transform
+	query.collision_mask = collision_mask
+	var results = space_state.intersect_shape(query)
+	for i in range(results.size() - 1, -1, -1):
+		var collider = results[i].collider
+		var shape = results[i].shape
+		if collider is CollisionObject2D && collider.is_shape_owner_one_way_collision_enabled(shape):
+			results.remove[i]
+		elif collider is TileMapLayer:
+			var tile_id = collider.get_cellv(results[i].metadata)
+			if collider.tile_set.tile_get_shape_one_way(tile_id, 0):
+				results.remove(i)
+	return results.size() == 0
