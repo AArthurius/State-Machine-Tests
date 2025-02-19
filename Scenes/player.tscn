@@ -1,4 +1,4 @@
-[gd_scene load_steps=132 format=3 uid="uid://xavblitkcp0i"]
+[gd_scene load_steps=130 format=3 uid="uid://xavblitkcp0i"]
 
 [ext_resource type="Script" path="res://Scenes/player.gd" id="1_dv2ni"]
 [ext_resource type="Texture2D" uid="uid://c38rjx14nk0ka" path="res://Assets/Knight/_JumpFallInbetween.png" id="2_aht1j"]
@@ -859,19 +859,11 @@ size = Vector2(16, 38)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_gtqhm"]
 size = Vector2(16, 27)
 
-[sub_resource type="Animation" id="Animation_7omgx"]
-resource_name = "Attack"
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_3obt8"]
-_data = {
-"Attack": SubResource("Animation_7omgx")
-}
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_plnkw"]
+size = Vector2(31, 25)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xrr62"]
 size = Vector2(38, 44)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_plnkw"]
-size = Vector2(31, 25)
 
 [node name="Player" type="CharacterBody2D"]
 z_index = 5
@@ -919,31 +911,38 @@ offset_top = -41.0
 offset_right = 21.0
 offset_bottom = -18.0
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-"": SubResource("AnimationLibrary_3obt8")
-}
+[node name="Can Stand Cast2" type="RayCast2D" parent="."]
+position = Vector2(8, 0)
+target_position = Vector2(0, -21)
+collision_mask = 2
 
-[node name="AttackHitbox" type="Area2D" parent="."]
-position = Vector2(33, -5)
-collision_layer = 4
-collision_mask = 8
-monitoring = false
+[node name="Can Stand Cast" type="RayCast2D" parent="."]
+position = Vector2(-8, 0)
+target_position = Vector2(0, -21)
+collision_mask = 2
 
-[node name="Shape" type="CollisionShape2D" parent="AttackHitbox"]
-shape = SubResource("RectangleShape2D_xrr62")
+[node name="Hitboxes" type="Node2D" parent="."]
 
-[node name="Crouch Attack Hitbox" type="Area2D" parent="."]
+[node name="Crouch Attack Hitbox" type="Area2D" parent="Hitboxes"]
 position = Vector2(29, 4)
 collision_layer = 4
 collision_mask = 8
 monitoring = false
 
-[node name="Shape" type="CollisionShape2D" parent="Crouch Attack Hitbox"]
+[node name="Shape" type="CollisionShape2D" parent="Hitboxes/Crouch Attack Hitbox"]
 shape = SubResource("RectangleShape2D_plnkw")
+
+[node name="AttackHitbox" type="Area2D" parent="Hitboxes"]
+position = Vector2(33, -5)
+collision_layer = 4
+collision_mask = 8
+monitoring = false
+
+[node name="Shape" type="CollisionShape2D" parent="Hitboxes/AttackHitbox"]
+shape = SubResource("RectangleShape2D_xrr62")
 
 [connection signal="timeout" from="Timers/Dash CD" to="State Machine" method="_on_dash_cd_timeout"]
 [connection signal="timeout" from="Timers/After Image Timer" to="." method="_on_after_image_timer_timeout"]
 [connection signal="timeout" from="Timers/Modulate Damage" to="." method="_on_modulate_damage_timeout"]
-[connection signal="body_entered" from="AttackHitbox" to="." method="_on_attack_hitbox_body_entered"]
-[connection signal="body_entered" from="Crouch Attack Hitbox" to="." method="_on_attack_hitbox_body_entered"]
+[connection signal="body_entered" from="Hitboxes/Crouch Attack Hitbox" to="." method="_on_attack_hitbox_body_entered"]
+[connection signal="body_entered" from="Hitboxes/AttackHitbox" to="." method="_on_attack_hitbox_body_entered"]

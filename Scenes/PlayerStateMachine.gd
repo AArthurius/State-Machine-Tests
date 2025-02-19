@@ -4,8 +4,9 @@ extends "res://Scenes/stateMachine.gd"
 @onready var jump_buffer_timer: Timer = $"../Timers/Jump Buffer timer"
 @onready var sprite: AnimatedSprite2D = $"../Sprite"
 @onready var dash_cd: Timer = $"../Timers/Dash CD"
-@onready var attack_hitbox: Area2D = $"../AttackHitbox"
-@onready var crouch_attack_hitbox: Area2D = $"../Crouch Attack Hitbox"
+@onready var attack_hitbox: Area2D = $"../Hitboxes/AttackHitbox"
+@onready var crouch_attack_hitbox: Area2D = $"../Hitboxes/Crouch Attack Hitbox"
+
 
 
 var dash_in_cooldown: = false
@@ -14,7 +15,7 @@ var dash_timer = 0.0
 const DASH_TIME = 0.5
 
 func _process(delta: float) -> void:
-	label.text = str(parent.velocity)
+	label.text = str(can_stand())
 	#label.text = #str_Current_State() #Current player state
 	#label.text = str(jump_buffer_timer.time_left)
 
@@ -155,7 +156,7 @@ func _get_transition(delta):
 		#Crouch Idle
 		states.crouch_idle:
 			parent.crouched = true
-			if !Input.is_action_pressed("S") and parent.can_stand():
+			if !Input.is_action_pressed("S") and can_stand():
 				return states.crouch_transition
 			elif !parent.is_on_floor():
 				if parent.velocity.y < 0:
@@ -174,7 +175,7 @@ func _get_transition(delta):
 					return states.jump
 				elif parent.velocity.y >= 0:
 					return states.falling
-			elif !Input.is_action_pressed("S"):
+			elif !Input.is_action_pressed("S") and can_stand():
 				parent.crouched = false
 				return states.run
 			elif parent.velocity.x == 0 and parent.direction == 0:
@@ -200,6 +201,8 @@ func _get_transition(delta):
 				return states.dash
 			elif (parent.velocity.x > 200 or parent.velocity.x < -200) and Input.is_action_pressed("S"):
 				return states.slide
+			elif Input.is_action_pressed("S"):
+				return states.crouch_idle
 			elif Input.is_action_pressed("Space") and parent.is_on_floor():
 				return states.roll
 		#Slide
@@ -214,10 +217,7 @@ func _get_transition(delta):
 					return states.falling 
 			elif parent.velocity.x == 0:
 				parent.sliding = false
-				if Input.is_action_pressed("S"):
-					return states.crouch_idle
-				else:
-					return states.slide_transition
+				return states.slide_transition
 		#Slide Transition
 		states.slide_transition:
 			parent.sliding = false
@@ -227,7 +227,12 @@ func _get_transition(delta):
 				elif parent.velocity.y >= 0:
 					return states.falling 
 			elif parent.sprite.get_frame() == 1:
-				return states.idle
+				if Input.is_action_pressed("S"):
+					return states.crouch_idle
+				elif can_stand():
+					return states.idle
+				else:
+					return states.crouch_idle
 		#Turn Around
 		states.turn_around:
 			if !parent.is_on_floor():
@@ -336,11 +341,11 @@ func _get_transition(delta):
 				crouch_attack_hitbox.monitoring = true
 			else:
 				crouch_attack_hitbox.monitoring = false
-			if !Input.is_action_pressed("S") and Input.is_action_pressed("M1") and sprite.get_frame() == 3:
+			if !Input.is_action_pressed("S") and Input.is_action_pressed("M1") and sprite.get_frame() == 3 and can_stand():
 				return states.attack
 			elif Input.is_action_pressed("M1") and sprite.get_frame() == 3:
 				return states.crouch_attack
-			elif sprite.get_frame() == 3:
+			elif sprite.get_frame() == 3: 
 				parent.is_attacking = false
 				return states.crouch_idle
 	return null
@@ -405,3 +410,12 @@ func _exit_state(old_state, new_state):
 
 func _on_dash_cd_timeout() -> void:
 	dash_in_cooldown = false
+
+func can_stand() -> bool:
+	var can_stand_cast: RayCast2D = $"../Can Stand Cast"
+	var can_stand_cast_2: RayCast2D = $"../Can Stand Cast2"
+	
+	if can_stand_cast.is_colliding() or can_stand_cast_2.is_colliding():
+		return false
+	else:
+		return true
