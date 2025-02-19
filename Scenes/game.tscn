@@ -191,7 +191,7 @@ sources/0 = SubResource("TileSetAtlasSource_tnme8")
 position = Vector2(0, -170)
 
 [node name="Parallax2D" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.1, 0.1)
+scroll_scale = Vector2(0.1, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D"]
@@ -199,7 +199,7 @@ texture = ExtResource("1_e56f2")
 region_rect = Rect2(705.347, 728.613, 27.5963, 64.5656)
 
 [node name="Parallax2D2" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.1, 0.1)
+scroll_scale = Vector2(0.1, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D2"]
@@ -207,7 +207,7 @@ texture = ExtResource("2_idr41")
 region_rect = Rect2(705.347, 728.613, 27.5963, 64.5656)
 
 [node name="Parallax2D3" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.2, 0.2)
+scroll_scale = Vector2(0.2, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D3"]
@@ -215,7 +215,7 @@ texture = ExtResource("1_hhk5a")
 region_rect = Rect2(705.347, 728.613, 27.5963, 64.5656)
 
 [node name="Parallax2D4" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.3, 0.3)
+scroll_scale = Vector2(0.3, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D4"]
@@ -223,7 +223,7 @@ texture = ExtResource("2_b4tmy")
 region_rect = Rect2(705.347, 728.613, 27.5963, 64.5656)
 
 [node name="Parallax2D5" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.3, 0.3)
+scroll_scale = Vector2(0.3, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D5"]
@@ -231,7 +231,7 @@ texture = ExtResource("3_6odf0")
 region_rect = Rect2(705.347, 728.613, 27.5963, 64.5656)
 
 [node name="Parallax2D6" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.4, 0.4)
+scroll_scale = Vector2(0.4, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D6"]
@@ -239,7 +239,7 @@ texture = ExtResource("1_cv5v3")
 region_rect = Rect2(705.347, 728.613, 27.5963, 64.5656)
 
 [node name="Parallax2D7" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.5, 0.5)
+scroll_scale = Vector2(0.5, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D7"]
@@ -247,7 +247,7 @@ texture = ExtResource("2_uhtcy")
 region_rect = Rect2(705.347, 728.613, 27.5963, 64.5656)
 
 [node name="Parallax2D8" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.5, 0.5)
+scroll_scale = Vector2(0.5, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D8"]
@@ -255,7 +255,7 @@ texture = ExtResource("8_ihrwy")
 region_rect = Rect2(705.347, 728.613, 27.5963, 64.5656)
 
 [node name="Parallax2D9" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.5, 0.5)
+scroll_scale = Vector2(0.5, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D9"]
@@ -263,7 +263,7 @@ texture = ExtResource("3_ro1n0")
 region_rect = Rect2(705.347, 728.613, 27.5963, 64.5656)
 
 [node name="Parallax2D10" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.6, 0.6)
+scroll_scale = Vector2(0.6, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D10"]
@@ -271,7 +271,7 @@ texture = ExtResource("10_tkm3k")
 region_rect = Rect2(705.347, 728.613, 27.5963, 64.5656)
 
 [node name="Parallax2D11" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.6, 0.6)
+scroll_scale = Vector2(0.6, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D11"]
@@ -279,7 +279,7 @@ texture = ExtResource("11_q7hoy")
 region_rect = Rect2(705.347, 728.613, 27.5963, 64.5656)
 
 [node name="Parallax2D12" type="Parallax2D" parent="Parallax"]
-scroll_scale = Vector2(0.6, 0.6)
+scroll_scale = Vector2(0.6, 1)
 repeat_size = Vector2(928, 0)
 
 [node name="Sprite" type="Sprite2D" parent="Parallax/Parallax2D12"]
