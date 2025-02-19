@@ -15,8 +15,10 @@ var dash_timer = 0.0
 const DASH_TIME = 0.5
 
 func _process(delta: float) -> void:
-	label.text = str(can_stand())
-	#label.text = #str_Current_State() #Current player state
+	if !parent.debug:
+		label.text = str_Current_State() #Current player state
+	else:
+		label.text = "DEBUG"
 	#label.text = str(jump_buffer_timer.time_left)
 
 func str_Current_State():
